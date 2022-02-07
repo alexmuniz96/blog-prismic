@@ -1,3 +1,11 @@
+import styles from './styles.module.scss'
+
 export default function Header() {
-  // TODO
+  return (
+    <header className={styles.headerContainer}>
+      <div className={styles.headerContent}>
+        <img src="/images/logo.svg" alt="spacetraveling" />
+      </div>
+    </header>
+  )
 }
