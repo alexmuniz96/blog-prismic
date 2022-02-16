@@ -1,7 +1,11 @@
 import { GetStaticProps } from 'next';
 import Head from 'next/head';
+import Prismic from '@prismicio/client'
 import { FiCalendar, FiUser } from 'react-icons/fi'
 import { getPrismicClient } from '../services/prismic';
+import { format } from 'date-fns'
+import ptBR from 'date-fns/locale/pt-BR';
+import { RichText } from 'prismic-dom';
 
 import commonStyles from '../styles/common.module.scss';
 import styles from './home.module.scss';
@@ -68,9 +72,26 @@ export default function Home() {
   )
 }
 
-// export const getStaticProps = async () => {
-//   // const prismic = getPrismicClient();
-//   // const postsResponse = await prismic.query(TODO);
+export const getStaticProps: GetStaticProps = async () => {
+  const prismic = getPrismicClient();
+  const postsResponse = await prismic.query([
+    Prismic.predicates.at('document.type', 'posts')
+  ], {
+    fetch: ['post.title', 'post.subtitle', 'post.author']
+  });
 
-//   // TODO
-// };
+  const posts = postsResponse.results.map(post => {
+    return {
+      uid: post.uid,
+      first_publication_date: format(new Date(post.first_publication_date), 'dd MMM yyyy', { locale: ptBR }),
+    }
+
+  })
+  console.log(postsResponse.results)
+
+  return {
+    props: {
+      // posts
+    }
+  }
+};
