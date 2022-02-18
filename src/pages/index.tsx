@@ -8,6 +8,7 @@ import ptBR from 'date-fns/locale/pt-BR';
 
 import commonStyles from '../styles/common.module.scss';
 import styles from './home.module.scss';
+import { useEffect, useState } from 'react';
 
 interface Post {
   uid?: string;
@@ -29,9 +30,19 @@ interface HomeProps {
 }
 
 export default function Home({ postsPagination }: HomeProps) {
+  const [posts, setPosts] = useState<Post[]>(postsPagination.results)
+  const [nextPage, setNextPage] = useState(postsPagination.next_page)
+
   const { next_page } = postsPagination
   const { results } = postsPagination
-  console.log(results)
+
+  function getNextPosts() {
+    const morePosts = fetch(`${nextPage}`)
+      .then(response => response.json())
+      .then((data: PostPagination) => {
+        console.log(data)
+      })
+  }
 
   return (
     <>
@@ -50,8 +61,10 @@ export default function Home({ postsPagination }: HomeProps) {
               </div>
             </a>
           ))}
-          {next_page &&
-            <span className={styles.nextPage}> Carregar mais posts</span>
+          {next_page !== null &&
+            <a onClick={getNextPosts}>
+              <span className={styles.nextPage}> Carregar mais posts</span>
+            </a>
           }
         </div>
       </main>
@@ -65,10 +78,10 @@ export const getStaticProps: GetStaticProps = async () => {
     Prismic.predicates.at('document.type', 'posts')
   ], {
     fetch: ['post.title', 'post.subtitle', 'post.author'],
-    pageSize: 1,
+    pageSize: 1
   });
 
-  const posts = postsResponse.results.map(post => {
+  const posts: Post[] = postsResponse.results.map(post => {
     return {
       uid: post.uid,
       first_publication_date: format(new Date(post.first_publication_date), 'dd MMM yyyy', { locale: ptBR }),
@@ -79,14 +92,15 @@ export const getStaticProps: GetStaticProps = async () => {
       }
     }
   })
-  const nextPage = postsResponse.next_page
+
+  const postsPagination = {
+    next_page: postsResponse.next_page,
+    results: postsResponse.results
+  }
 
   return {
     props: {
-      postsPagination: {
-        nextPage,
-        results: posts
-      }
+      postsPagination
     }
   }
 };
