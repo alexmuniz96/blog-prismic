@@ -8,7 +8,7 @@ import ptBR from 'date-fns/locale/pt-BR';
 
 import commonStyles from '../styles/common.module.scss';
 import styles from './home.module.scss';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 interface Post {
   uid?: string;
@@ -33,14 +33,18 @@ export default function Home({ postsPagination }: HomeProps) {
   const [posts, setPosts] = useState<Post[]>(postsPagination.results)
   const [nextPage, setNextPage] = useState(postsPagination.next_page)
 
-  const { next_page } = postsPagination
-  const { results } = postsPagination
-
-  function getNextPosts() {
-    const morePosts = fetch(`${nextPage}`)
+  function getMorePosts() {
+    fetch(`${nextPage}`)
       .then(response => response.json())
       .then((data: PostPagination) => {
-        console.log(data)
+
+        const formatedPosts = data.results.map(post => {
+          return {
+            ...post,
+            first_publication_date: format(new Date(post.first_publication_date), 'dd MMM yyyy', { locale: ptBR })
+          }
+        })
+        setPosts([...posts, ...formatedPosts])
       })
   }
 
@@ -51,7 +55,7 @@ export default function Home({ postsPagination }: HomeProps) {
       </Head>
       <main className={styles.container}>
         <div className={styles.posts}>
-          {results.map(post => (
+          {posts.map(post => (
             <a key={post.uid} href="">
               <strong>{post.data.title}</strong>
               <p>{post.data.subtitle}</p>
@@ -61,8 +65,8 @@ export default function Home({ postsPagination }: HomeProps) {
               </div>
             </a>
           ))}
-          {next_page !== null &&
-            <a onClick={getNextPosts}>
+          {nextPage !== null &&
+            <a onClick={getMorePosts}>
               <span className={styles.nextPage}> Carregar mais posts</span>
             </a>
           }
