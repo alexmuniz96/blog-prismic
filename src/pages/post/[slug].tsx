@@ -66,7 +66,7 @@ export default function Post({ post }: PostProps) {
           <h1>{post.data.title}</h1>
         </header>
         <div className={styles.postInfo}>
-          <time> <FiCalendar />{post.first_publication_date}</time>
+          <time> <FiCalendar />{format(new Date(post.first_publication_date), 'dd MMM yyyy', { locale: ptBR })}</time>
           <span> <FiUser />{post.data.author}</span>
           <span> <FiClock /> {readTime} min</span>
         </div>
@@ -111,14 +111,14 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
   const response = await prismic.getByUID('posts', String(slug), {});
 
   const post = {
-    first_publication_date: format(new Date(response.first_publication_date), 'dd MMM yyyy', { locale: ptBR }),
+    uid: response.uid,
+    first_publication_date: response.first_publication_date,
     data: {
       title: response.data.title,
-      banner: {
-        url: response.data.banner.url
-      },
+      subtitle: response.data.subtitle,
+      banner: response.data.banner,
       author: response.data.author,
-      content: response.data.content
+      content: response.data.content,
     }
   }
 
@@ -126,6 +126,6 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
     props: {
       post
     },
-    redirect: 60 * 30
+    revalidate: 60 * 30
   }
 };
