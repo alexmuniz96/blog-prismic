@@ -9,6 +9,7 @@ import ptBR from 'date-fns/locale/pt-BR';
 import commonStyles from '../styles/common.module.scss';
 import styles from './home.module.scss';
 import { useState } from 'react';
+import Link from 'next/link';
 
 interface Post {
   uid?: string;
@@ -53,17 +54,19 @@ export default function Home({ postsPagination }: HomeProps) {
       <Head>
         <title>Spacetraveling | Posts</title>
       </Head>
-      <main className={styles.container}>
+      <main className={commonStyles.container}>
         <div className={styles.posts}>
           {posts.map(post => (
-            <a key={post.uid} href="">
-              <strong>{post.data.title}</strong>
-              <p>{post.data.subtitle}</p>
-              <div className={styles.info}>
-                <time> <strong>{<FiCalendar />} </strong>{post.first_publication_date}</time>
-                <span> <strong>{<FiUser />}</strong>{post.data.author}</span>
-              </div>
-            </a>
+            <Link href={`/post/${post.uid}`} >
+              <a key={post.uid} >
+                <strong>{post.data.title}</strong>
+                <p>{post.data.subtitle}</p>
+                <div className={styles.info}>
+                  <time> {<FiCalendar />} {post.first_publication_date}</time>
+                  <span> {<FiUser />}{post.data.author}</span>
+                </div>
+              </a>
+            </Link>
           ))}
           {nextPage !== null &&
             <a onClick={getMorePosts}>
