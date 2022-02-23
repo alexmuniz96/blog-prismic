@@ -41,8 +41,7 @@ export default function Home({ postsPagination }: HomeProps) {
 
         const formatedPosts = data.results.map(post => {
           return {
-            ...post,
-            first_publication_date: format(new Date(post.first_publication_date), 'dd MMM yyyy', { locale: ptBR })
+            ...post
           }
         })
         setPosts([...posts, ...formatedPosts])
@@ -62,7 +61,9 @@ export default function Home({ postsPagination }: HomeProps) {
                 <strong>{post.data.title}</strong>
                 <p>{post.data.subtitle}</p>
                 <div className={styles.info}>
-                  <time> {<FiCalendar />} {post.first_publication_date}</time>
+                  <time> {<FiCalendar />} {format(new Date(post.first_publication_date), 'd MMM yyyy', {
+                    locale: ptBR,
+                  })}</time>
                   <span> {<FiUser />}{post.data.author}</span>
                 </div>
               </a>
@@ -81,33 +82,35 @@ export default function Home({ postsPagination }: HomeProps) {
 
 export const getStaticProps: GetStaticProps = async () => {
   const prismic = getPrismicClient();
-  const postsResponse = await prismic.query([
-    Prismic.predicates.at('document.type', 'posts')
-  ], {
-    fetch: ['post.title', 'post.subtitle', 'post.author'],
-    pageSize: 1
-  });
 
-  const posts: Post[] = postsResponse.results.map(post => {
+  const postsResponse = await prismic.query(
+    [Prismic.predicates.at('document.type', 'posts')],
+    {
+      fetch: ['posts.title', 'posts.subtitle', 'posts.author'],
+      pageSize: 1,
+    }
+  );
+
+  const posts = postsResponse.results.map(post => {
     return {
       uid: post.uid,
-      first_publication_date: format(new Date(post.first_publication_date), 'dd MMM yyyy', { locale: ptBR }),
+      first_publication_date: post.first_publication_date,
       data: {
         title: post.data.title,
         subtitle: post.data.subtitle,
         author: post.data.author,
-      }
-    }
-  })
+      },
+    };
+  });
 
   const postsPagination = {
     next_page: postsResponse.next_page,
-    results: posts
-  }
+    results: posts,
+  };
 
   return {
     props: {
-      postsPagination
-    }
-  }
+      postsPagination,
+    },
+  };
 };
